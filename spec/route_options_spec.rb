@@ -22,7 +22,7 @@ describe Raptor::RouteOptions do
     it "creates responders for action templates" do
       responder = stub
       Raptor::ActionTemplateResponder.stub(:new).
-        with(app_module, "post", parent_path, :show).
+        with(app_module, parent_path, hash_including({:present => "post"})).
         and_return(responder)
       options = Raptor::RouteOptions.new(app_module,
                                          parent_path,
@@ -33,7 +33,7 @@ describe Raptor::RouteOptions do
     it "renders the action's template by default" do
       template_responder = stub
       Raptor::ActionTemplateResponder.stub(:new).
-        with(app_module, "post", parent_path, :show).
+        with(app_module, parent_path, hash_including({:present => "post"})).
         and_return(template_responder)
       options = Raptor::RouteOptions.new(app_module,
                                          parent_path,
@@ -43,28 +43,33 @@ describe Raptor::RouteOptions do
 
     it "uses the explicit template if one is given" do
       template_responder = stub
+      params = {:present => :one, :render => "show"}
       Raptor::TemplateResponder.stub(:new).
-        with(app_module, "post", "show").
+        with(app_module, "posts", hash_including({:present => "post", :render => "show"})).
         and_return(template_responder)
+
       options = Raptor::RouteOptions.new(
-        app_module, parent_path, :present => "post", :render => "show")
+        app_module, parent_path, :action => :show, :present => "post", :render => "show")
       options.responder.should == template_responder
     end
 
     it "delegates to an action if :redirect is a symbol" do
       action_redirecter = stub
       Raptor::ActionRedirectResponder.stub(:new).
-        with(app_module, :index) { action_redirecter }
+        with(app_module, "posts", hash_including({:redirect => :index})).
+        and_return(action_redirecter)
       options = Raptor::RouteOptions.new(
-        app_module, parent_path, :redirect => :index)
+        app_module, parent_path, :action => :show, :redirect => :index)
       options.responder.should == action_redirecter
     end
 
     it "delegates to a url directly is :redirect is a string" do
       redirecter = stub
-      Raptor::RedirectResponder.stub(:new).with('http://google.com') { redirecter }
+      Raptor::RedirectResponder.stub(:new).
+        with(app_module, "posts", hash_including({:redirect => 'http://google.com'})).
+        and_return(redirecter)
       options = Raptor::RouteOptions.new(
-        app_module, parent_path, :redirect => 'http://google.com')
+        app_module, parent_path, :action => :show, :redirect => 'http://google.com')
       options.responder.should == redirecter
     end
 

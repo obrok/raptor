@@ -147,6 +147,13 @@ module Raptor
       @app_module = app_module
       @parent_path = parent_path
       @params = params
+      @responder = [
+        RedirectResponder,
+        ActionRedirectResponder,
+        PlaintextResponder,
+        TemplateResponder,
+        ActionTemplateResponder,
+      ].find { |r| r.matches?(@params) }
     end
 
     def action; @params.fetch(:action); end
@@ -165,22 +172,7 @@ module Raptor
     end
 
     def responder
-      redirect = @params[:redirect]
-      text = @params[:text]
-      presenter = @params[:present].to_s
-      template_path = @params[:render]
-
-      if redirect.is_a?(String)
-        RedirectResponder.new(redirect)
-      elsif redirect
-        ActionRedirectResponder.new(@app_module, redirect)
-      elsif text
-        PlaintextResponder.new(text)
-      elsif template_path
-        TemplateResponder.new(@app_module, presenter, template_path)
-      else
-        ActionTemplateResponder.new(@app_module, presenter, @parent_path, action)
-      end
+      @responder.new(@app_module, @parent_path, @params)
     end
 
     def requirements

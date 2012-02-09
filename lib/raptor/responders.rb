@@ -1,7 +1,11 @@
 module Raptor
   class PlaintextResponder
-    def initialize(text)
-      @text = text
+    def initialize(app_module, parent_path, params)
+      @text = params[:text]
+    end
+
+    def self.matches?(params)
+      params.has_key?(:text)
     end
 
     def respond(route, subject, injector)
@@ -10,9 +14,13 @@ module Raptor
   end
 
   class ActionRedirectResponder
-    def initialize(app_module, target)
+    def initialize(app_module, parent_path, params)
       @app_module = app_module
-      @target = target
+      @target = params[:redirect]
+    end
+
+    def self.matches?(params)
+      params.has_key?(:redirect)
     end
 
     def respond(route, subject, injector)
@@ -37,6 +45,10 @@ module Raptor
       @location = location
     end
 
+    def self.matches?(params)
+      params[:redirect].kind_of?(String)
+    end
+
     def respond(route, subject, injector)
       response = Rack::Response.new
       Raptor.log("Redirecting to #{@location}")
@@ -47,11 +59,15 @@ module Raptor
   end
 
   class TemplateResponder
-    def initialize(app_module, presenter_name, template_path, path)
+    def initialize(app_module, parent_path, params)
       @app_module = app_module
-      @presenter_name = presenter_name
-      @template_path = template_path
-      @path = path
+      @presenter_name = params[:present].to_s
+      @template_path = params[:render]
+      @path = parent_path
+    end
+
+    def self.matches?(params)
+      params.has_key?(:render)
     end
 
     def respond(route, subject, injector)
@@ -81,18 +97,21 @@ module Raptor
   end
 
   class ActionTemplateResponder
-    def initialize(app_module, presenter_name, parent_path, template_name)
+    def initialize(app_module, parent_path, params)
       @app_module = app_module
-      @presenter_name = presenter_name
       @parent_path = parent_path
-      @template_name = template_name
+      @presenter_name = params[:present]
+      @template_name = params[:action]
+    end
+
+    def self.matches?(params)
+      true
     end
 
     def respond(route, subject, injector)
       responder = TemplateResponder.new(@app_module,
-                                        @presenter_name,
-                                        template_path,
-                                        @parent_path)
+                                        @parent_path,
+                                        {:present => @presenter_name, :render => template_path})
       responder.respond(route, subject, injector)
     end
 

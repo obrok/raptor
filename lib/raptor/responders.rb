@@ -2,8 +2,12 @@ require "erb"
 
 module Raptor
   class PlaintextResponder
-    def initialize(text)
-      @text = text
+    def initialize(resource, action, params)
+      @text = params[:text]
+    end
+
+    def self.matches?(params)
+      params.has_key?(:text)
     end
 
     def respond(record, injector)
@@ -12,9 +16,13 @@ module Raptor
   end
 
   class RedirectResponder
-    def initialize(resource, target_route_name)
+    def initialize(resource, action, params)
       @resource = resource
-      @target_route_name = target_route_name
+      @target_route_name = params[:redirect]
+    end
+
+    def self.matches?(params)
+      params.has_key?(:redirect)
     end
 
     def respond(record, injector)
@@ -38,10 +46,14 @@ module Raptor
   end
 
   class TemplateResponder
-    def initialize(resource, presenter_name, template_path)
+    def initialize(resource, action, params)
       @resource = resource
-      @presenter_name = presenter_name
-      @template_path = template_path
+      @presenter_name = params[:present]
+      @template_path = params[:render]
+    end
+
+    def self.matches?(params)
+      params.has_key?(:render)
     end
 
     def respond(record, injector)
@@ -68,16 +80,20 @@ module Raptor
   end
 
   class ActionTemplateResponder
-    def initialize(resource, presenter_name, template_name)
+    def initialize(resource, action, params)
       @resource = resource
-      @presenter_name = presenter_name
-      @template_name = template_name
+      @presenter_name = params[:present]
+      @template_name = action
+    end
+
+    def self.matches?(params)
+      true
     end
 
     def respond(record, injector)
       responder = TemplateResponder.new(@resource,
-                                        @presenter_name,
-                                        template_path)
+                                        @template_name,
+                                        {:present => @presenter_name, :render => template_path})
       responder.respond(record, injector)
     end
 

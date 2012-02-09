@@ -113,6 +113,12 @@ module Raptor
     def initialize(resource, params)
       @resource = resource
       @params = params
+      @responder = [
+        RedirectResponder,
+        PlaintextResponder,
+        TemplateResponder,
+        ActionTemplateResponder,
+      ].find { |r| r.matches?(@params) }
     end
 
     def delegate_name
@@ -126,20 +132,7 @@ module Raptor
     end
 
     def responder_for(action)
-      redirect = @params[:redirect]
-      text = @params[:text]
-      presenter = @params[:present]
-      template_path = @params[:render]
-
-      if redirect
-        RedirectResponder.new(@resource, redirect)
-      elsif text
-        PlaintextResponder.new(text)
-      elsif template_path
-        TemplateResponder.new(@resource, presenter, template_path)
-      else
-        ActionTemplateResponder.new(@resource, presenter, action)
-      end
+      @responder.new(@resource, action, @params)
     end
 
     def requirements

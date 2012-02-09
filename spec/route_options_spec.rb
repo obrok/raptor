@@ -22,7 +22,7 @@ describe Raptor::RouteOptions do
       responder = stub
       action = :show
       Raptor::ActionTemplateResponder.stub(:new).
-        with(resource, :one, action).
+        with(resource, :show, {:present => :one}).
         and_return(responder)
       options = Raptor::RouteOptions.new(resource, {:present => :one})
       options.responder_for(:show).should == responder
@@ -30,7 +30,7 @@ describe Raptor::RouteOptions do
 
     it "renders the action's template by default" do
       template_responder = stub
-      Raptor::ActionTemplateResponder.stub(:new).with(resource, :one, :show).
+      Raptor::ActionTemplateResponder.stub(:new).with(resource, :show, {:present => :one}).
         and_return(template_responder)
       options = Raptor::RouteOptions.new(resource, :present => :one)
       options.responder_for(:show).should == template_responder
@@ -38,9 +38,10 @@ describe Raptor::RouteOptions do
 
     it "uses the explicit template if one is given" do
       template_responder = stub
-      Raptor::TemplateResponder.stub(:new).with(resource, :one, "show").
+      params = {:present => :one, :render => "show"}
+      Raptor::TemplateResponder.stub(:new).with(resource, :show, params).
         and_return(template_responder)
-      options = Raptor::RouteOptions.new(resource, :present => :one, :render => "show")
+      options = Raptor::RouteOptions.new(resource, params)
       options.responder_for(:show).should == template_responder
     end
   end

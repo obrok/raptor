@@ -2,3 +2,6 @@
 /statistics.numbers
 
 *.gem
+*.sw[a-z]
+/.bundle
+/bin

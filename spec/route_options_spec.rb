@@ -73,6 +73,14 @@ describe Raptor::RouteOptions do
       options.responder.should == redirecter
     end
 
+    it "uses the custom responder if one is given" do
+      responder = stub
+      responder_class = stub(:new => responder)
+      params = {:responder => responder_class}
+      options = Raptor::RouteOptions.new(app_module, "posts", params)
+
+      options.responder.should == responder
+    end
   end
 
   it "delegates to nothing when there's no :to" do

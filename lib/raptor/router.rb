@@ -147,7 +147,7 @@ module Raptor
       @app_module = app_module
       @parent_path = parent_path
       @params = params
-      @responder = [
+      @responder = params[:responder] || [
         RedirectResponder,
         ActionRedirectResponder,
         PlaintextResponder,

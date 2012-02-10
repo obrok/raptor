@@ -44,6 +44,14 @@ describe Raptor::RouteOptions do
       options = Raptor::RouteOptions.new(resource, params)
       options.responder_for(:show).should == template_responder
     end
+
+    it "uses the custom responder if one is given" do
+      responder = stub
+      responder_class = stub(:new => responder)
+      params = {:responder => responder_class}
+      options = Raptor::RouteOptions.new(resource, params)
+      options.responder_for(:show).should == responder
+    end
   end
 
   it "delegates to nothing when there's no :to" do

@@ -113,7 +113,7 @@ module Raptor
     def initialize(resource, params)
       @resource = resource
       @params = params
-      @responder = [
+      @responder = params[:responder] || [
         RedirectResponder,
         PlaintextResponder,
         TemplateResponder,
